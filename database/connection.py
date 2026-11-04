@@ -13,6 +13,30 @@ def get_connection():
     return conn
 
 
+def ensure_database():
+    conn = get_connection()
+    sql = SCHEMA_PATH.read_text(encoding="utf-8")
+    conn.executescript(sql)
+
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN plain_password TEXT")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN created_by INTEGER")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        conn.execute("UPDATE users SET plain_password = 'admin123' WHERE username = 'admin' AND (plain_password IS NULL OR plain_password = '')")
+    except sqlite3.OperationalError:
+        pass
+
+    conn.commit()
+    conn.close()
+
+
 def initialize_database():
     conn = get_connection()
     drop_sql = """

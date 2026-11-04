@@ -5,7 +5,10 @@ CREATE TABLE IF NOT EXISTS users (
     full_name TEXT NOT NULL,
     role TEXT NOT NULL CHECK(role IN ('ADMIN', 'WORKER')),
     account_status TEXT NOT NULL DEFAULT 'ACTIVE',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    plain_password TEXT,
+    created_by INTEGER,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS parking_lots (
