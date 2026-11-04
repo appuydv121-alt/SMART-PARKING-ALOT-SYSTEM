@@ -7,4 +7,9 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SMART_PARKING_ADMIN_PASSWORD
+        generateValue: true
+      - key: SMART_PARKING_DB_PATH
+        value: /tmp/smart_parking.db

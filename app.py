@@ -4,6 +4,7 @@ This replaces the Tkinter GUI while reusing the exact same backend logic
 (models, services, database, validators).
 """
 from datetime import datetime
+import os
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response
 
@@ -18,7 +19,7 @@ from services.report_service import ReportService
 from services.worker_service import WorkerManagementService
 
 app = Flask(__name__)
-app.secret_key = 'smart-parking-secret-key-2024'
+app.secret_key = os.environ.get('SECRET_KEY', 'smart-parking-secret-key-2024')
 
 
 # ---------------------------------------------------------------------------
@@ -740,4 +741,3 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.environ.get('FLASK_ENV') == 'development'
     app.run(host='0.0.0.0', port=port, debug=debug_mode)
-

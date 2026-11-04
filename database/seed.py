@@ -1,3 +1,5 @@
+import os
+
 from database.connection import get_connection
 
 
@@ -10,7 +12,7 @@ def seed_default_data():
         service.create_user(
             username='admin',
             full_name='System Administrator',
-            password='admin123',
+            password=os.getenv('SMART_PARKING_ADMIN_PASSWORD', 'admin123'),
             role='ADMIN',
         )
 

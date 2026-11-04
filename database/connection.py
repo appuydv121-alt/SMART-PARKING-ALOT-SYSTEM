@@ -1,12 +1,14 @@
 import sqlite3
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DB_PATH = ROOT / "smart_parking.db"
+DB_PATH = Path(os.getenv("SMART_PARKING_DB_PATH", str(ROOT / "smart_parking.db")))
 SCHEMA_PATH = ROOT / "database" / "schema.sql"
 
 
 def get_connection():
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")

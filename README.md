@@ -35,6 +35,16 @@ This project implements a Smart Parking Lot Management System using modular OOP 
 
 ---
 
+## Deploying to Render
+
+The included `render.yaml` can be deployed as a Render Blueprint. Render generates
+the Flask session key and initial admin password for the service. The default
+SQLite database is stored under `/tmp` on Render, so data is temporary and may be
+lost when the service restarts or redeploys. Use persistent storage and a
+production database before relying on this deployment for real parking records.
+
+---
+
 ## Running the Desktop GUI (Tkinter)
 
 If you still want to run the original desktop window interface:
