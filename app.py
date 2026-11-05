@@ -400,6 +400,29 @@ def update_worker_password():
         return jsonify({'error': str(exc)}), 500
 
 
+@app.route('/admin/workers/remove', methods=['POST'])
+@admin_required
+def remove_worker():
+    data = request.get_json() or {}
+    worker_id = data.get('worker_id')
+    worker_password = data.get('worker_password', '').strip()
+
+    if not worker_password:
+        return jsonify({'error': 'Worker password is required to confirm removal.'}), 400
+
+    try:
+        res = WorkerManagementService().remove_worker(
+            worker_id=worker_id,
+            worker_password=worker_password,
+            admin_id=session['user_id']
+        )
+        return jsonify({'success': True, 'message': f"Worker '{res['username']}' has been removed successfully!"})
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    except Exception as exc:
+        return jsonify({'error': str(exc)}), 500
+
+
 # ---------------------------------------------------------------------------
 # Worker Dashboard
 # ---------------------------------------------------------------------------

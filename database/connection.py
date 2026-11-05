@@ -54,6 +54,12 @@ class _MySQLConnection:
         self._connection = connection
 
     def execute(self, query, parameters=()):
+        query = re.sub(
+            r"^\s*BEGIN\s+IMMEDIATE\b",
+            "START TRANSACTION",
+            query,
+            flags=re.IGNORECASE,
+        )
         query = re.sub(r"\?", "%s", query)
         query = re.sub(
             r"INSERT\s+OR\s+IGNORE\s+INTO\b",
@@ -97,6 +103,9 @@ class _MySQLConnection:
 
     def commit(self):
         self._connection.commit()
+
+    def rollback(self):
+        self._connection.rollback()
 
     def close(self):
         self._connection.close()

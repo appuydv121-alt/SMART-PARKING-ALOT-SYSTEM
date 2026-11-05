@@ -56,7 +56,7 @@
                                     <th>Username</th>
                                     <th>Full Name</th>
                                     <th>Status</th>
-                                    <th>Security</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -70,9 +70,14 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" onclick="openPasswordModal({{ w.user_id }}, '{{ w.username }}')">
-                                            🔑 View / Change Password
-                                        </button>
+                                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                            <button class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" onclick="openPasswordModal({{ w.user_id }}, '{{ w.username }}')">
+                                                🔑 Password
+                                            </button>
+                                            <button class="btn" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: #dc2626; color: #ffffff; border: none;" onclick="openRemoveWorkerModal({{ w.user_id }}, '{{ w.username }}')">
+                                                🗑️ Remove Worker
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -133,6 +138,35 @@
                             <button type="button" class="btn" onclick="closePasswordModal()" style="background: var(--slate-100); color: var(--slate-600);">Close</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remove Worker Modal (Asks for Worker's Password) -->
+        <div id="removeWorkerModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center;">
+            <div style="background: var(--white); border-radius: var(--radius); width: 100%; max-width: 440px; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid var(--slate-200); position: relative;">
+                <button onclick="closeRemoveWorkerModal()" style="position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--slate-400);">&times;</button>
+
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+                    <span style="font-size: 1.4rem;">🗑️</span>
+                    <h3 style="font-size: 1.3rem; margin: 0; color: #b91c1c;">Remove Worker</h3>
+                </div>
+                <p id="removeModalWorkerSubtitle" style="color: var(--slate-500); font-size: 0.88rem; margin-bottom: 1.2rem;">Worker: ...</p>
+
+                <div id="removeModalAlert" style="display: none; padding: 0.7rem 0.9rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.2rem; font-size: 0.85rem; color: #991b1b;">
+                    🔒 <strong>Security Verification:</strong> Enter the <strong>worker's password</strong> to permanently remove this worker.
+                </div>
+
+                <div class="form-group">
+                    <label for="workerPasswordConfirmInput">Worker's Password</label>
+                    <input type="password" id="workerPasswordConfirmInput" placeholder="Enter worker's password" style="width: 100%; padding: 0.65rem 0.85rem; border: 1.5px solid var(--slate-300); border-radius: 6px;">
+                </div>
+
+                <div style="display: flex; gap: 0.8rem; margin-top: 1.4rem;">
+                    <button type="button" class="btn" onclick="confirmRemoveWorker()" style="flex: 1; background: #dc2626; color: white; border: none; font-weight: 600; padding: 0.65rem;" id="confirmRemoveBtn">Confirm & Remove</button>
+                    <button type="button" class="btn" onclick="closeRemoveWorkerModal()" style="background: var(--slate-100); color: var(--slate-600);">Cancel</button>
                 </div>
             </div>
         </div>
@@ -243,6 +277,75 @@ async function saveNewPassword() {
 
 function showModalAlert(msg, isSuccess) {
     const el = document.getElementById('modalAlert');
+    el.innerText = msg;
+    el.style.display = 'block';
+    if (isSuccess) {
+        el.style.background = '#f0fdf4';
+        el.style.color = '#15803d';
+        el.style.border = '1px solid #bbf7d0';
+    } else {
+        el.style.background = '#fef2f2';
+        el.style.color = '#b91c1c';
+        el.style.border = '1px solid #fecaca';
+    }
+}
+
+let activeRemoveWorkerId = null;
+
+function openRemoveWorkerModal(workerId, username) {
+    activeRemoveWorkerId = workerId;
+    document.getElementById('removeModalWorkerSubtitle').innerText = 'Worker: ' + username;
+    document.getElementById('workerPasswordConfirmInput').value = '';
+    document.getElementById('removeModalAlert').style.display = 'none';
+    document.getElementById('removeWorkerModal').style.display = 'flex';
+    document.getElementById('workerPasswordConfirmInput').focus();
+}
+
+function closeRemoveWorkerModal() {
+    document.getElementById('removeWorkerModal').style.display = 'none';
+    activeRemoveWorkerId = null;
+}
+
+async function confirmRemoveWorker() {
+    const workerPass = document.getElementById('workerPasswordConfirmInput').value.trim();
+    if (!workerPass) {
+        showRemoveModalAlert('Please enter the worker password.', false);
+        return;
+    }
+
+    const btn = document.getElementById('confirmRemoveBtn');
+    btn.disabled = true;
+    btn.innerText = 'Verifying & Removing...';
+
+    try {
+        const res = await fetch('{{ url_for("remove_worker") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                worker_id: activeRemoveWorkerId,
+                worker_password: workerPass
+            })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            showRemoveModalAlert('✅ ' + data.message, true);
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showRemoveModalAlert(data.error || 'Failed to remove worker.', false);
+        }
+    } catch (err) {
+        showRemoveModalAlert('Error: ' + err.message, false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Confirm & Remove';
+    }
+}
+
+function showRemoveModalAlert(msg, isSuccess) {
+    const el = document.getElementById('removeModalAlert');
     el.innerText = msg;
     el.style.display = 'block';
     if (isSuccess) {

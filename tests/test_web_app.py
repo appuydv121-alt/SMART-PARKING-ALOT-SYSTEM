@@ -309,5 +309,44 @@ def test_admin_isolation_multi_tenant(client):
     assert b"worker1" not in workers_resp.data
 
 
+def test_remove_worker_with_password(client):
+    # 1. Login as admin
+    client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+
+    # 2. Create worker
+    client.post('/admin/workers', data={
+        'username': 'del_worker',
+        'full_name': 'Delete Me',
+        'password': 'workerpassword123'
+    }, follow_redirects=True)
+
+    from database.connection import get_connection
+    conn = get_connection()
+    row = conn.execute("SELECT user_id FROM users WHERE username = 'del_worker'").fetchone()
+    conn.close()
+    worker_id = row['user_id']
+
+    # 3. Attempt removal with wrong worker password -> 400
+    fail_resp = client.post('/admin/workers/remove', json={
+        'worker_id': worker_id,
+        'worker_password': 'wrongpassword'
+    })
+    assert fail_resp.status_code == 400
+    assert b"Incorrect worker password" in fail_resp.data
+
+    # 4. Attempt removal with correct worker password -> 200
+    succ_resp = client.post('/admin/workers/remove', json={
+        'worker_id': worker_id,
+        'worker_password': 'workerpassword123'
+    })
+    assert succ_resp.status_code == 200
+    assert succ_resp.get_json()['success'] is True
+
+    # 5. Verify worker is no longer in worker list
+    workers_page = client.get('/admin/workers')
+    assert b"del_worker" not in workers_page.data
+
+
+
 
 
