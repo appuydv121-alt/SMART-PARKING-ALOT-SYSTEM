@@ -2,3 +2,4 @@ pytest
 mysql-connector-python
 Flask
 gunicorn
+turso_serverless

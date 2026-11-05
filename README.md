@@ -37,11 +37,18 @@ This project implements a Smart Parking Lot Management System using modular OOP 
 
 ## Deploying to Render
 
-The included `render.yaml` can be deployed as a Render Blueprint. Render generates
-the Flask session key and initial admin password for the service. The default
-SQLite database is stored under `/tmp` on Render, so data is temporary and may be
-lost when the service restarts or redeploys. Use persistent storage and a
-production database before relying on this deployment for real parking records.
+The included `render.yaml` deploys the web service on Render's free plan and
+requires a free Turso database because Render's free filesystem is temporary.
+Create a Turso database, then set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
+in the Render service's environment before deploying. The Blueprint marks
+these values as unsynchronized so secrets are not stored in this repository.
+Render also generates the Flask session key and initial admin password.
+
+The app uses local SQLite when run outside Render without Turso configured.
+The Render deployment refuses to start without both Turso settings rather
+than silently storing accounts in temporary storage. Existing accounts created
+before Turso is configured are not copied automatically; if they were lost
+after a Render restart, they must be registered again.
 
 ---
 

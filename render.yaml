@@ -12,5 +12,9 @@ services:
         generateValue: true
       - key: SMART_PARKING_ADMIN_PASSWORD
         generateValue: true
-      - key: SMART_PARKING_DB_PATH
-        value: /tmp/smart_parking.db
+      - key: SMART_PARKING_REQUIRE_TURSO
+        value: "true"
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false
