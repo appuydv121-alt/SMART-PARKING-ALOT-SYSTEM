@@ -1,10 +1,10 @@
-from database.connection import initialize_database
+from database.connection import ensure_database
 from database.seed import seed_default_data
 from interfaces.login import LoginWindow
 
 
 def main():
-    initialize_database()
+    ensure_database()
     seed_default_data()
     window = LoginWindow()
     window.mainloop()

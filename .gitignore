@@ -3,6 +3,10 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+.vscode/
+.env
+.env.*
+!.env.example
 smart_parking.db
 receipts/*
 !receipts/.gitkeep

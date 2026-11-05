@@ -1,6 +1,6 @@
 # Smart Parking Lot Management System
 
-This project implements a Smart Parking Lot Management System using modular OOP design, SQLite storage (with MySQL-ready configuration), and both **Web** (HTML/CSS/JS with Flask) and **Desktop** (Tkinter) interfaces.
+This project implements a Smart Parking Lot Management System using modular OOP design, MySQL or SQLite storage, and both **Web** (HTML/CSS/JS with Flask) and **Desktop** (Tkinter) interfaces.
 
 ## Features
 
@@ -21,13 +21,17 @@ This project implements a Smart Parking Lot Management System using modular OOP 
    pip install -r requirements.txt
    ```
 
-2. **Start the Web Application**:
+2. **Configure local MySQL** by copying `.env.example` to `.env` and setting `SMART_PARKING_DB_PASSWORD` to your MySQL root password. The app creates the `smart_parking` database and its tables automatically. MySQL must be running on the configured host and port.
+
+3. **Start the Web Application**:
    ```bash
    python app.py
    ```
 
-3. **Open in browser**:
+4. **Open in browser**:
    Visit [http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+To use SQLite instead, set `SMART_PARKING_USE_MYSQL=false` in `.env`. MySQL is the default in the provided local environment configuration.
 
 ### Default Admin Credentials:
 - **Username**: `admin`

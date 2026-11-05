@@ -1,5 +1,4 @@
 pytest
 mysql-connector-python
+python-dotenv
 Flask
-gunicorn
-turso_serverless
