@@ -2,11 +2,10 @@
 Database Inspector Utility for Smart Parking Lot System.
 Run: python inspect_db.py
 """
-import sys
-from database.connection import get_connection
+from database import get_db
 
 def inspect_database():
-    conn = get_connection()
+    conn = get_db()
     try:
         tables = [list(r.values())[0] for r in conn.execute("SHOW TABLES").fetchall()]
         print("=" * 75)
@@ -24,9 +23,8 @@ def inspect_database():
             # Show sample rows if table has data
             if count > 0:
                 rows = conn.execute(f"SELECT * FROM `{table}` LIMIT 5").fetchall()
-                print(f"Data preview (up to 5 rows):")
+                print("Data preview (up to 5 rows):")
                 for i, r in enumerate(rows, 1):
-                    # Hide long password hashes from console
                     row_dict = {k: v for k, v in r.items() if k != "password_hash"}
                     print(f"  {i}. {row_dict}")
             else:

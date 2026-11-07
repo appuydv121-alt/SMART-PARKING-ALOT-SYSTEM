@@ -1,4 +1,3 @@
-pytest
+Flask
 mysql-connector-python
 python-dotenv
-Flask

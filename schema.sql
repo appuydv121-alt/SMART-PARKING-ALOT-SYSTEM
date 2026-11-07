@@ -1,3 +1,7 @@
+-- ============================================================
+-- Smart Parking Lot Management System - MySQL Database Schema
+-- ============================================================
+
 CREATE TABLE IF NOT EXISTS users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(80) NOT NULL UNIQUE,

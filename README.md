@@ -1,76 +1,6 @@
 # Smart Parking Lot Management System
 
-This project implements a Smart Parking Lot Management System using modular OOP design, MySQL or SQLite storage, and both **Web** (HTML/CSS/JS with Flask) and **Desktop** (Tkinter) interfaces.
-
-## Features
-
-- **Admin & Worker Authentication**: Role-based access with PBKDF2 hashed passwords and session management
-- **Parking Lot Configuration**: Automatic slot generation (Cars and Bikes) and rate management
-- **Vehicle Entry**: Registration, real-time slot allocation, and entry slip generation
-- **Vehicle Exit**: Instant lookup by ticket ID or vehicle number, hourly duration fee calculation, and payment processing (Cash, UPI, Card)
-- **Parking Slot Management**: Live interactive status overview of all parking slots
-- **Worker Management**: Admin ability to create and manage attendants
-- **Reports & Analytics**: Daily/weekly/monthly revenue and occupancy statistics
-
----
-
-## Running the Web Frontend (Recommended)
-
-1. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Configure local MySQL** by copying `.env.example` to `.env` and setting `SMART_PARKING_DB_PASSWORD` to your MySQL root password. The app creates the `smart_parking` database and its tables automatically. MySQL must be running on the configured host and port.
-
-3. **Start the Web Application**:
-   ```bash
-   python app.py
-   ```
-
-4. **Open in browser**:
-   Visit [http://127.0.0.1:5000](http://127.0.0.1:5000)
-
-To use SQLite instead, set `SMART_PARKING_USE_MYSQL=false` in `.env`. MySQL is the default in the provided local environment configuration.
-
-### Default Admin Credentials:
-- **Username**: `admin`
-- **Password**: `admin123`
-
----
-
-## Deploying to Render
-
-The included `render.yaml` deploys the web service on Render's free plan and
-requires a free Turso database because Render's free filesystem is temporary.
-Create a Turso database, then set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
-in the Render service's environment before deploying. The Blueprint marks
-these values as unsynchronized so secrets are not stored in this repository.
-Render also generates the Flask session key and initial admin password.
-
-The app uses local SQLite when run outside Render without Turso configured.
-The Render deployment refuses to start without both Turso settings rather
-than silently storing accounts in temporary storage. Existing accounts created
-before Turso is configured are not copied automatically; if they were lost
-after a Render restart, they must be registered again.
-
----
-
-## Running the Desktop GUI (Tkinter)
-
-If you still want to run the original desktop window interface:
-```bash
-python main.py
-```
-
----
-
-## Running Tests
-
-Run the full automated test suite (database, services, fee calculations, and web app routes):
-```bash
-python -m pytest
-```
+A beginner-friendly and clean web-based Smart Parking Management System built with **Python (Flask)**, **HTML/CSS/JavaScript**, and **MySQL**.
 
 ---
 
@@ -78,15 +8,98 @@ python -m pytest
 
 ```text
 SMART_PARKING_ALOT_SYSTEM/
-├── app.py                 # Flask Web application & routing
-├── main.py                # Desktop GUI (Tkinter) entry point
-├── config/                # App & DB configurations
-├── database/              # SQLite connection, schema, seed data
-├── models/                # OOP Domain Models (User, Admin, Worker, Vehicle, Car, Bike, etc.)
-├── services/              # Core business logic (Auth, Parking, Fees, Payments, Reports, Slots)
-├── static/                # Modern CSS & Web assets
-├── templates/             # HTML templates (Dashboards, Vehicle Entry/Exit, Reports, etc.)
-├── interfaces/            # Desktop GUI windows (Tkinter)
-├── utils/                 # Validators and helper utilities
-└── tests/                 # Pytest test suite
+│
+├── app.py                # Main Flask web application and all page routes
+├── database.py           # Database connection and automatic table creation
+├── helpers.py            # Utility functions (fee calculation, password hashing, plate formatting)
+├── inspect_db.py         # Terminal tool to view database tables and live data
+├── main.py               # Alternative entry point to run the web server
+├── schema.sql            # MySQL database schema definition
+├── requirements.txt      # Project dependencies (Flask, mysql-connector-python, python-dotenv)
+├── README.md             # Project documentation and guide
+├── .env                  # Local database settings and credentials
+├── .env.example          # Sample environment variables template
+│
+├── static/
+│   └── css/
+│       └── style.css     # Clean and responsive styling
+│
+└── templates/            # HTML pages
+    ├── base.html
+    ├── login.html
+    ├── register.html
+    ├── admin_dashboard.html
+    ├── worker_dashboard.html
+    ├── parking_setup.html
+    ├── slot_management.html
+    ├── vehicle_entry.html
+    ├── vehicle_exit.html
+    ├── manage_workers.html
+    ├── parking_history.html
+    ├── reports.html
+    ├── entry_slip_print.html
+    ├── exit_receipt_print.html
+    └── partials/
+        ├── admin_sidebar.html
+        └── worker_sidebar.html
+```
+
+---
+
+## Features
+
+- **Role-based Authentication**: Separate Admin and Worker dashboards with secure password hashing.
+- **Facility Isolation**: Each Admin manages their own independent parking lot, slot capacities, rates, and stats.
+- **Live Slot Availability Map**: Interactive real-time slot view showing available vs. occupied car and bike slots.
+- **Vehicle Entry**: Real-time slot allocation, hourly rate assignment, and printable thermal entry slips / text file downloads.
+- **Vehicle Exit & Fee Calculation**: Automatic bill calculation based on parked duration, checkout payment (Cash, UPI, Card), and printable exit receipts.
+- **Worker Management**: Admins can add workers, securely view/change worker passwords, and remove workers with password verification.
+- **Reports & Analytics**: Daily, weekly, monthly revenue summaries, payment mode breakdown, and occupancy percentages.
+
+---
+
+## How to Run the Project
+
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Configure MySQL Database
+Make sure MySQL is running on your machine, then verify your credentials in the `.env` file:
+```properties
+SMART_PARKING_USE_MYSQL=true
+SMART_PARKING_DB_HOST=127.0.0.1
+SMART_PARKING_DB_PORT=3306
+SMART_PARKING_DB_USER=root
+SMART_PARKING_DB_PASSWORD=your_mysql_password
+SMART_PARKING_DB_NAME=smart_parking
+```
+*(The app automatically creates the `smart_parking` database and tables if they don't exist).*
+
+### 3. Start the Web Server
+Run either:
+```bash
+python app.py
+```
+or:
+```bash
+python main.py
+```
+
+### 4. Open in Your Browser
+Visit: **[http://127.0.0.1:5000](http://127.0.0.1:5000)**
+
+---
+
+## Default Admin Credentials
+- **Username:** `admin`
+- **Password:** `admin123`
+
+---
+
+## Checking the Database in Console
+To inspect all tables, column names, row counts, and sample data directly in the terminal, run:
+```bash
+python inspect_db.py
 ```
