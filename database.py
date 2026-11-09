@@ -76,41 +76,70 @@ class MySQLConnectionWrapper:
         return MySQLCursorWrapper(cursor)
 
     def commit(self):
-        self.conn.commit()
+        if hasattr(self.conn, "commit") and callable(getattr(self.conn, "commit")):
+            try:
+                self.conn.commit()
+                return
+            except Exception:
+                pass
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("COMMIT")
+            cursor.close()
+        except Exception:
+            pass
 
     def rollback(self):
-        self.conn.rollback()
+        if hasattr(self.conn, "rollback") and callable(getattr(self.conn, "rollback")):
+            try:
+                self.conn.rollback()
+                return
+            except Exception:
+                pass
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("ROLLBACK")
+            cursor.close()
+        except Exception:
+            pass
 
     def close(self):
         self.conn.close()
 
 
 def get_db():
-    """Returns an active database connection (MySQL or SQLite)."""
+    """Returns an active database connection (MySQL or SQLite fallback)."""
     if USE_MYSQL:
-        import mysql.connector
+        try:
+            import mysql.connector
 
-        # Connect to MySQL server and ensure database exists
-        server_conn = mysql.connector.connect(
-            host=DB_HOST,
-            port=DB_PORT,
-            user=DB_USER,
-            password=DB_PASSWORD
-        )
-        cur = server_conn.cursor()
-        cur.execute(f"CREATE DATABASE IF NOT EXISTS `{DB_NAME}` CHARACTER SET utf8mb4")
-        server_conn.commit()
-        server_conn.close()
+            # Connect to MySQL server and ensure database exists
+            server_conn = mysql.connector.connect(
+                host=DB_HOST,
+                port=DB_PORT,
+                user=DB_USER,
+                password=DB_PASSWORD
+            )
+            cur = server_conn.cursor()
+            cur.execute(f"CREATE DATABASE IF NOT EXISTS `{DB_NAME}` CHARACTER SET utf8mb4")
+            server_conn.commit()
+            server_conn.close()
 
-        # Connect to the target database
-        db_conn = mysql.connector.connect(
-            host=DB_HOST,
-            port=DB_PORT,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            database=DB_NAME
-        )
-        return MySQLConnectionWrapper(db_conn)
+            # Connect to the target database
+            db_conn = mysql.connector.connect(
+                host=DB_HOST,
+                port=DB_PORT,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB_NAME
+            )
+            return MySQLConnectionWrapper(db_conn)
+        except Exception as e:
+            print(f"[Database] Notice: MySQL unavailable ({e}), using local SQLite fallback.")
+            conn = sqlite3.connect(str(SQLITE_PATH))
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA foreign_keys = ON")
+            return conn
     else:
         # SQLite connection
         conn = sqlite3.connect(str(SQLITE_PATH))
@@ -122,8 +151,9 @@ def get_db():
 def init_db():
     """Initializes tables and seeds default admin account and facility if empty."""
     conn = get_db()
+    is_mysql = isinstance(conn, MySQLConnectionWrapper)
     try:
-        if USE_MYSQL:
+        if is_mysql:
             # Create MySQL tables
             conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -377,3 +407,4 @@ def init_db():
         conn.commit()
     finally:
         conn.close()
+

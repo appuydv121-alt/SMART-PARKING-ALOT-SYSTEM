@@ -99,3 +99,4 @@ CREATE TABLE IF NOT EXISTS receipts (
     CONSTRAINT fk_receipts_record FOREIGN KEY (record_id) REFERENCES parking_records(record_id),
     CONSTRAINT fk_receipts_created_by FOREIGN KEY (created_by) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
